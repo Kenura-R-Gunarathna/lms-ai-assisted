@@ -1,0 +1,5 @@
+rootProject.name = 'lms-ai-assisted'
+
+// Two implementations of the same Library Management System.
+include 'version-a'   // Traditional programming approach (no AI)
+include 'version-b'   // AI-assisted programming approach (layered)

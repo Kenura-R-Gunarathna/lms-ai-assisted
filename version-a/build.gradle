@@ -1,0 +1,12 @@
+plugins {
+    id 'application'
+}
+
+repositories {
+    mavenCentral()
+}
+
+application {
+    // Version A entry point.
+    mainClass = 'com.library.Main'
+}
