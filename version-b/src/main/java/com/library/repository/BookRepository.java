@@ -4,12 +4,14 @@ import com.library.model.Book;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import org.springframework.stereotype.Repository;
 
 /**
  * Version B - AI-Assisted Approach | Layer: REPOSITORY
  * Encapsulates data access for books. The AI suggested a HashMap for O(1)
  * lookup instead of the linear ArrayList scan used in Version A.
  */
+@Repository
 public class BookRepository {
 
     private final Map<String, Book> catalogue = new HashMap<>();

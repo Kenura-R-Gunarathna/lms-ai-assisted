@@ -3,11 +3,13 @@ package com.library.repository;
 import com.library.model.BorrowRecord;
 import java.util.ArrayList;
 import java.util.List;
+import org.springframework.stereotype.Repository;
 
 /**
  * Version B - AI-Assisted Approach | Layer: REPOSITORY
  * Encapsulates data access for borrow records.
  */
+@Repository
 public class BorrowRepository {
 
     private final List<BorrowRecord> records = new ArrayList<>();
