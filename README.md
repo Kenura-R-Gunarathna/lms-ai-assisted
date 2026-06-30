@@ -10,76 +10,87 @@
 | **Index Number** | S17239 |
 | **Registration No.** | 2023S20003 |
 
-*(Analyzing the Role of AI-Assisted Programming in Modern Software Development)*
-
-The same moderate-complexity problem — an **Online Library Management System** —
-is implemented **twice** so the two development approaches can be compared. It is
-a Gradle **multi-project** build.
+The same moderate-complexity problem — an **Online Library Management System
+REST API** — is implemented **twice** so the two development approaches can be
+compared. It is a Spring Boot + Gradle **multi-project** build.
 
 | | Approach | Architecture |
 |---|---|---|
-| **version-a** | Traditional (written manually, no AI) | Single monolithic `Library` class + model classes |
-| **version-b** | AI-assisted (ChatGPT draft, then reviewed) | Layered: **Model → Repository → Service** |
+| **version-a** | Traditional (written manually, no AI) | Monolithic `@RestController` holding data + logic |
+| **version-b** | AI-assisted (ChatGPT draft, then reviewed) | Layered: **Controller → Service → Repository** (+ DTOs, exception→status mapping) |
 
-## Features (both versions)
-- Manage a book catalogue and users (`Student`, `Librarian`, `Administrator` via a `User` hierarchy)
-- Borrow and return books with availability tracking
-- Automatic fine calculation for late returns (14-day loan, 10.0 per late day)
-- Handling for missing / unavailable books
+## REST API (both versions)
+
+| Method | Endpoint | Body | Success | Errors |
+|---|---|---|---|---|
+| `GET`    | `/api/library/books`  | — | `200` list of books | — |
+| `POST`   | `/api/library/borrow` | `{"memberId","bookId"}` | `200` issued | `404` book not found · `409` unavailable |
+| `DELETE` | `/api/library/return` | `{"memberId","bookId","returnDate"}` | `200` returned (+ fine if late) | `404` no active record |
+
+Fine rule: 14-day loan, `10.0` per late day. Users are modelled with a `User`
+hierarchy (`Student`, `Librarian`, `Administrator`).
 
 ## Project structure
 ```
 lms-ai-assisted/
 ├── settings.gradle            # includes version-a and version-b
 ├── gradlew / gradlew.bat      # Gradle wrapper (9.6.1)
-├── version-a/                 # traditional approach
-│   ├── build.gradle
+├── version-a/                 # traditional approach  (port 8080)
+│   ├── build.gradle           # Spring Boot 4.1.0
 │   └── src/main/java/com/library/
-│       └── Book, User, Student, Librarian, Administrator,
-│           BorrowRecord, Library, Main
-└── version-b/                 # AI-assisted approach (layered)
-    ├── build.gradle           # + JUnit 5
+│       ├── LibraryApplication.java
+│       ├── LibraryController.java     # everything in one class
+│       └── Book, User, Student, Librarian, Administrator, BorrowRecord
+└── version-b/                 # AI-assisted approach (layered, port 8081)
+    ├── build.gradle
     └── src/
         ├── main/java/com/library/
-        │   ├── model/         # Book, User + roles, BorrowRecord
-        │   ├── repository/    # BookRepository (HashMap, O(1)), BorrowRepository
+        │   ├── LibraryApplication.java
+        │   ├── controller/    # LibraryController (thin REST layer)
         │   ├── service/       # LibraryService (business logic)
-        │   └── Main.java      # wires the layers together
+        │   ├── repository/    # BookRepository (HashMap, O(1)), BorrowRepository
+        │   ├── model/         # Book, User + roles, BorrowRecord
+        │   ├── dto/           # BorrowRequest, ReturnRequest (records)
+        │   └── exception/     # NotFoundException (404), ConflictException (409)
         └── test/java/com/library/service/
             └── LibraryServiceTest.java   # 6 JUnit 5 tests
 ```
 
-## How to build & run (Gradle)
+## How to build, test & run (Gradle)
 
-Build everything (compiles both, runs Version B tests):
+Build everything and run the Version B tests:
 ```bash
 ./gradlew build
 ```
 
-Run Version A (traditional):
-```bash
-./gradlew :version-a:run
-```
-
-Run Version B (AI-assisted):
-```bash
-./gradlew :version-b:run
-```
-
-Run the Version B tests only:
+Run the Version B tests only (expected: **6 tests, all passing**):
 ```bash
 ./gradlew :version-b:test
 ```
-Expected: **6 tests, all passing.**
+
+Run a server (Ctrl+C to stop):
+```bash
+./gradlew :version-a:bootRun     # traditional  -> http://localhost:8080
+./gradlew :version-b:bootRun     # AI-assisted  -> http://localhost:8081
+```
+
+Try it once the server is up:
+```bash
+curl http://localhost:8081/api/library/books
+curl -X POST http://localhost:8081/api/library/borrow \
+     -H "Content-Type: application/json" \
+     -d '{"memberId":"S001","bookId":"B001"}'
+```
 
 ## Key difference illustrated
-- **Version A** searches the catalogue with a linear `ArrayList` scan and prints
-  results directly (one class does everything).
-- **Version B** (AI suggestions) stores books in a `HashMap` for O(1) lookup and
-  returns result strings from a dedicated service layer, which makes the logic
-  unit-testable and separates concerns (model / repository / service).
+- **Version A** keeps the data (`ArrayList`) and all logic inside a single
+  controller, uses a linear search, and sets HTTP status codes by hand.
+- **Version B** (AI suggestions) separates concerns into
+  **Controller → Service → Repository**, stores books in a `HashMap` for O(1)
+  lookup, and throws domain exceptions that Spring maps to `404` / `409`
+  automatically — keeping the controller thin and the service unit-testable.
 
-See the accompanying report (`../s17239_Assessment02_AI_Assisted_Programming.pdf`)
-for the full comparison (development time, code quality, error handling,
-maintainability), the AI prompts used, the UML diagrams, and the critical
-analysis.
+See the accompanying report
+(`../s17239_Assessment02_AI_Assisted_Programming.pdf`) for the full comparison
+(development time, code quality, error handling, maintainability), the AI prompts
+used, the UML diagrams, and the critical analysis.
