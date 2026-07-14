@@ -1,7 +1,16 @@
 # Online Library Management System — AI-Assisted vs Traditional
 
-Case study for **Advanced Programming Concepts – Assessment 02**
-*(Analyzing the Role of AI-Assisted Programming in Modern Software Development).*
+| Key | Details |
+|---|---|
+| **Course** | IT 3003 – Advanced Programming Techniques |
+| **Assessment** | Assessment 02 – Report Submission |
+| **Assignment Title** | Analyzing the Role of AI-Assisted Programming in Modern Software Development |
+| **Case Study** | Online Library Management System |
+| **Name** | Kenura R. Gunarathna |
+| **Index Number** | S17239 |
+| **Registration No.** | 2023S20003 |
+
+*(Analyzing the Role of AI-Assisted Programming in Modern Software Development)*
 
 The same moderate-complexity problem — an **Online Library Management System** —
 is implemented **twice** so the two development approaches can be compared. It is
